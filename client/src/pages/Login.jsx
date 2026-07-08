@@ -16,6 +16,7 @@ function Login() {
         password,
       });
       localStorage.setItem("token", res.data.access_token);
+      localStorage.setItem("user_id", res.data.user_id);
       navigate("/dashboard");
     } catch (err) {
       setError("Invalid email or password.");
