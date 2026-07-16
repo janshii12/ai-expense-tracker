@@ -29,3 +29,25 @@ def get_anomalies(user_id: str = Query(...), db: Session = Depends(get_db)):
         if total > (avg * 2):
             anomalies.append({"category": name, "total": total})
     return anomalies
+
+@router.get("/daily")
+def daily_totals(user_id: str = Query(...), db: Session = Depends(get_db)):
+    results = (
+        db.query(func.date(models.Transaction.date), func.sum(models.Transaction.amount))
+        .filter(models.Transaction.user_id == user_id)
+        .group_by(func.date(models.Transaction.date))
+        .order_by(func.date(models.Transaction.date).desc())
+        .all()
+    )
+    return [{"date": str(r[0]), "total": r[1]} for r in results]
+
+@router.get("/monthly")
+def monthly_totals(user_id: str = Query(...), db: Session = Depends(get_db)):
+    results = (
+        db.query(func.to_char(models.Transaction.date, 'YYYY-MM'), func.sum(models.Transaction.amount))
+        .filter(models.Transaction.user_id == user_id)
+        .group_by(func.to_char(models.Transaction.date, 'YYYY-MM'))
+        .order_by(func.to_char(models.Transaction.date, 'YYYY-MM').desc())
+        .all()
+    )
+    return [{"month": r[0], "total": r[1]} for r in results]

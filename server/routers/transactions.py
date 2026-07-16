@@ -23,7 +23,13 @@ def create_transaction(data: dict, db: Session = Depends(get_db)):
 def list_transactions(user_id: str = Query(...), db: Session = Depends(get_db)):
     txns = db.query(models.Transaction).filter(models.Transaction.user_id == user_id).all()
     return [
-        {"id": t.id, "amount": t.amount, "description": t.description, "date": str(t.date)}
+        {
+            "id": t.id,
+            "amount": t.amount,
+            "description": t.description,
+            "date": str(t.date),
+            "category_id": t.category_id,
+        }
         for t in txns
     ]
 
@@ -39,3 +45,23 @@ def create_category(data: dict, db: Session = Depends(get_db)):
 def list_categories(db: Session = Depends(get_db)):
     cats = db.query(models.Category).all()
     return [{"id": c.id, "name": c.name} for c in cats]
+
+@router.delete("/{transaction_id}")
+def delete_transaction(transaction_id: str, db: Session = Depends(get_db)):
+    txn = db.query(models.Transaction).filter(models.Transaction.id == transaction_id).first()
+    if not txn:
+        return {"error": "Not found"}
+    db.delete(txn)
+    db.commit()
+    return {"deleted": True}
+
+@router.put("/{transaction_id}")
+def update_transaction(transaction_id: str, data: dict, db: Session = Depends(get_db)):
+    txn = db.query(models.Transaction).filter(models.Transaction.id == transaction_id).first()
+    if not txn:
+        return {"error": "Not found"}
+    txn.amount = data.get("amount", txn.amount)
+    txn.description = data.get("description", txn.description)
+    db.commit()
+    db.refresh(txn)
+    return {"id": txn.id, "amount": txn.amount, "description": txn.description}
