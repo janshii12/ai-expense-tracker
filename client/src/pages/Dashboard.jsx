@@ -9,6 +9,7 @@ function Dashboard() {
   const [categories, setCategories] = useState([]);
   const [categoryId, setCategoryId] = useState("");
   const [anomalies, setAnomalies] = useState([]);
+  const [insight, setInsight] = useState("");
 
   const fetchData = async () => {
   const userId = localStorage.getItem("user_id");
@@ -19,7 +20,9 @@ function Dashboard() {
   const catRes = await axios.get("http://127.0.0.1:8000/transactions/categories");
   setCategories(catRes.data);
   const anomalyRes = await axios.get(`http://127.0.0.1:8000/stats/anomalies?user_id=${userId}`);
-  setAnomalies(anomalyRes.data)
+  setAnomalies(anomalyRes.data);
+  const insightRes = await axios.get(`http://127.0.0.1:8000/insights/summary?user_id=${userId}`);
+  setInsight(insightRes.data.summary);
 };
 
   useEffect(() => {
@@ -73,6 +76,12 @@ function Dashboard() {
           ))}
           </div>
         )}
+        {insight && (
+          <div className="bg-blue-100 p-4 rounded mb-4 w-96">
+            <h2 className="text-xl font-bold mb-2">AI Insight</h2>
+            <p>{insight}</p>
+          </div>
+      )}
         <button className="w-full bg-blue-600 text-white p-2 rounded">
           Add Expense
         </button>
