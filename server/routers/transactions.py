@@ -26,3 +26,16 @@ def list_transactions(user_id: str = Query(...), db: Session = Depends(get_db)):
         {"id": t.id, "amount": t.amount, "description": t.description, "date": str(t.date)}
         for t in txns
     ]
+
+@router.post("/categories")
+def create_category(data: dict, db: Session = Depends(get_db)):
+    cat = models.Category(name=data["name"])
+    db.add(cat)
+    db.commit()
+    db.refresh(cat)
+    return {"id": cat.id, "name": cat.name}
+
+@router.get("/categories")
+def list_categories(db: Session = Depends(get_db)):
+    cats = db.query(models.Category).all()
+    return [{"id": c.id, "name": c.name} for c in cats]
