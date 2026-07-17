@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../config";
 import "../ledger.css";
 
 const barColors = ["var(--rust)", "var(--ink)", "var(--sage)", "var(--amber)"];
@@ -13,26 +14,26 @@ function Dashboard() {
   const [total, setTotal] = useState(0);
   const [transactions, setTransactions] = useState([]);
   const [insight, setInsight] = useState("");
+  const [daily, setDaily] = useState([]);
+  const [monthly, setMonthly] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const userId = localStorage.getItem("user_id");
-  const [daily, setDaily] = useState([]);
-  const [monthly, setMonthly] = useState([]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const totalRes = await axios.get(`http://127.0.0.1:8000/stats/monthly-total?user_id=${userId}`);
+      const totalRes = await axios.get(`${API_URL}/stats/monthly-total?user_id=${userId}`);
       setTotal(totalRes.data.total);
-      const txnRes = await axios.get(`http://127.0.0.1:8000/transactions/?user_id=${userId}`);
+      const txnRes = await axios.get(`${API_URL}/transactions/?user_id=${userId}`);
       setTransactions(txnRes.data);
-      const catRes = await axios.get("http://127.0.0.1:8000/transactions/categories");
+      const catRes = await axios.get(`${API_URL}/transactions/categories`);
       setCategories(catRes.data);
-      const insightRes = await axios.get(`http://127.0.0.1:8000/insights/summary?user_id=${userId}`);
+      const insightRes = await axios.get(`${API_URL}/insights/summary?user_id=${userId}`);
       setInsight(insightRes.data.summary);
-      const dailyRes = await axios.get(`http://127.0.0.1:8000/stats/daily?user_id=${userId}`);
+      const dailyRes = await axios.get(`${API_URL}/stats/daily?user_id=${userId}`);
       setDaily(dailyRes.data);
-      const monthlyRes = await axios.get(`http://127.0.0.1:8000/stats/monthly?user_id=${userId}`);
+      const monthlyRes = await axios.get(`${API_URL}/stats/monthly?user_id=${userId}`);
       setMonthly(monthlyRes.data);
     } catch (err) {
       console.error(err);
@@ -45,7 +46,7 @@ function Dashboard() {
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    await axios.post("http://127.0.0.1:8000/transactions/", {
+    await axios.post(`${API_URL}/transactions/`, {
       amount: parseFloat(amount),
       description,
       date: new Date().toISOString(),
@@ -57,18 +58,17 @@ function Dashboard() {
   };
 
   const handleDelete = async (id) => {
-  await axios.delete(`http://127.0.0.1:8000/transactions/${id}`);
-  fetchData();
+    await axios.delete(`${API_URL}/transactions/${id}`);
+    fetchData();
   };
 
   const handleEdit = async (t) => {
-  const newAmount = prompt("New amount:", t.amount);
-  if (newAmount === null) return;
-  await axios.put(`http://127.0.0.1:8000/transactions/${t.id}`, {
-    amount: parseFloat(newAmount),
-  });
-  fetchData();
+    const newAmount = prompt("New amount:", t.amount);
+    if (newAmount === null) return;
+    await axios.put(`${API_URL}/transactions/${t.id}`, { amount: parseFloat(newAmount) });
+    fetchData();
   };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user_id");
@@ -88,7 +88,7 @@ function Dashboard() {
   return (
     <div className="app">
       <div className="sidebar">
-        <div className="brand">Ledger</div>
+        <div className="brand">Ledger<span>.</span></div>
         <div className="nav-tab active"><span className="num">01</span> Dashboard</div>
         <div className="nav-tab" onClick={handleLogout}><span className="num">02</span> Logout</div>
         <div className="sidebar-foot">Signed in as<br /><strong style={{ color: "var(--paper)" }}>You</strong></div>
@@ -110,7 +110,7 @@ function Dashboard() {
           <div className="stat">
             <div className="label">Top category</div>
             <div className="value" style={{ fontSize: 20 }}>
-              {categoryTotals.length ? categoryTotals.sort((a, b) => b.total - a.total)[0].name : "—"}
+              {categoryTotals.length ? categoryTotals.slice().sort((a, b) => b.total - a.total)[0].name : "—"}
             </div>
           </div>
           <div className="stat">
@@ -172,30 +172,34 @@ function Dashboard() {
               </table>
               {transactions.length === 0 && <p style={{ color: "var(--ink-light)", fontSize: 13, marginTop: 12 }}>No transactions yet.</p>}
             </div>
-          </div>
-          <div className="panel">
-            <h2>Monthly report</h2>
-            <table>
-              <thead><tr><th>Month</th><th style={{textAlign:"right"}}>Total</th></tr></thead>
-              <tbody>
-                {monthly.map((m) => (
-                  <tr key={m.month}><td>{m.month}</td><td className="amt">₹{m.total}</td></tr>
-                ))}
-              </tbody>
-            </table>
+
+            <div className="panel">
+              <h2>Monthly report</h2>
+              <table>
+                <thead><tr><th>Month</th><th style={{ textAlign: "right" }}>Total</th></tr></thead>
+                <tbody>
+                  {monthly.map((m) => (
+                    <tr key={m.month}><td>{m.month}</td><td className="amt">₹{m.total}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+              {monthly.length === 0 && <p style={{ color: "var(--ink-light)", fontSize: 13, marginTop: 12 }}>No data yet.</p>}
+            </div>
+
+            <div className="panel">
+              <h2>Daily report</h2>
+              <table>
+                <thead><tr><th>Date</th><th style={{ textAlign: "right" }}>Total</th></tr></thead>
+                <tbody>
+                  {daily.map((d) => (
+                    <tr key={d.date}><td>{d.date}</td><td className="amt">₹{d.total}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+              {daily.length === 0 && <p style={{ color: "var(--ink-light)", fontSize: 13, marginTop: 12 }}>No data yet.</p>}
+            </div>
           </div>
 
-          <div className="panel">
-            <h2>Daily report</h2>
-            <table>
-              <thead><tr><th>Date</th><th style={{textAlign:"right"}}>Total</th></tr></thead>
-              <tbody>
-                {daily.map((d) => (
-                  <tr key={d.date}><td>{d.date}</td><td className="amt">₹{d.total}</td></tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
           <div>
             <div className="panel" style={{ background: "transparent", border: "none", padding: 0 }}>
               <h2 style={{ padding: "0 4px" }}>AI Insight <span className="tag">generated</span></h2>
