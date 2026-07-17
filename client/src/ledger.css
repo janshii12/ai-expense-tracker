@@ -45,6 +45,12 @@ td.amt{ font-family:'IBM Plex Mono',monospace; text-align:right; }
 .add-form input, .add-form select{ font-family:'Inter',sans-serif; font-size:13px; padding:8px 12px; border:1px solid var(--line); border-radius:4px; background:#fff; }
 .add-form button{ background:var(--amber); color:#fff; border:none; padding:8px 18px; border-radius:4px; font-size:13px; cursor:pointer; }
 
+.month-toggle{ font-family:'IBM Plex Mono',monospace; font-size:13px; background:var(--paper-dim); border:1px solid var(--line); border-radius:20px; padding:8px 16px; color:var(--ink); white-space:nowrap; }
+.topbar{ display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:34px; flex-wrap:wrap; gap:16px; }
+.flag{ display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--rust); margin-right:6px; vertical-align:middle; }
+.r-total{ border-top:1px dashed var(--line); margin-top:10px; padding-top:10px; display:flex; justify-content:space-between; font-size:13px; font-weight:600; color:var(--rust); }
+
+
 @media (max-width: 768px) {
   .app {
     grid-template-columns: 1fr;
