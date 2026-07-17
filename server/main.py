@@ -9,7 +9,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://vercel.com/janshi-g/ai-expense-tracker/JCUJRtmdz3VQXH5ABadjaUnxsJUz"],
+    allow_origins=["https://ai-expense-tracker-one-opal.vercel.app/"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
