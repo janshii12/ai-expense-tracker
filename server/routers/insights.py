@@ -1,12 +1,8 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from database import get_db
-import models, os
-from dotenv import load_dotenv
-from google import genai
-
-load_dotenv()
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+import models
 
 router = APIRouter(prefix="/insights", tags=["insights"])
 
@@ -17,18 +13,39 @@ def get_summary(user_id: str = Query(...), db: Session = Depends(get_db)):
     if not txns:
         return {"summary": "No transactions yet. Add some expenses first!"}
 
-    txn_text = "\n".join([f"{t.description}: ₹{t.amount}" for t in txns])
+    total = sum(t.amount for t in txns)
+    count = len(txns)
+    avg = total / count
 
-    try:
-        response = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=f"Here are my recent expenses:\n{txn_text}\n\nGive me a short, friendly 2-3 sentence summary of my spending habits and one practical tip to save money."
+    cat_totals = (
+        db.query(models.Category.name, func.sum(models.Transaction.amount))
+        .join(models.Transaction, models.Transaction.category_id == models.Category.id)
+        .filter(models.Transaction.user_id == user_id)
+        .group_by(models.Category.name)
+        .all()
+    )
+
+    if cat_totals:
+        top_category, top_amount = max(cat_totals, key=lambda c: c[1])
+        top_share = (top_amount / total) * 100 if total else 0
+    else:
+        top_category, top_amount, top_share = None, 0, 0
+
+    biggest = max(txns, key=lambda t: t.amount)
+
+    lines = [
+        f"You've made {count} transactions totaling ₹{total:,.0f}, averaging ₹{avg:,.0f} per expense."
+    ]
+    if top_category:
+        lines.append(
+            f"{top_category} is your biggest spending area at ₹{top_amount:,.0f} ({top_share:.0f}% of your total)."
         )
-        return {"summary": response.text}
-    except Exception as e:
-        return {"summary": f"AI insight unavailable right now: {str(e)}"}
+    lines.append(
+        f"Your largest single expense was \"{biggest.description}\" at ₹{biggest.amount:,.0f}."
+    )
+    if top_category:
+        lines.append(f"Tip: try setting a monthly cap for {top_category} to keep it in check.")
+    else:
+        lines.append("Tip: tag your expenses with categories to get more useful breakdowns.")
 
-@router.get("/list-models")
-def list_models():
-    models_list = client.models.list()
-    return [m.name for m in models_list]
+    return {"summary": " ".join(lines)}

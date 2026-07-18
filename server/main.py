@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from database import engine, Base
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,9 +8,12 @@ from routers import users,transactions,stats,insights
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+default_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
+extra_origins = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://localhost:5173", "https://ai-expense-tracker-one-opal.vercel.app/"],
+    allow_origins=default_origins + extra_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
