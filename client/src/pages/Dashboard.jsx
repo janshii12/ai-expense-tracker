@@ -105,7 +105,7 @@ function Dashboard() {
         <div className="nav-tab" onClick={() => document.querySelector('.panel:nth-of-type(1)')?.scrollIntoView({behavior:'smooth'})}><span className="num">03</span> Categories</div>
         <div className="nav-tab" onClick={() => document.querySelector('.receipt')?.scrollIntoView({behavior:'smooth'})}><span className="num">04</span> Insights</div>
         <div className="nav-tab" onClick={handleLogout}><span className="num">05</span> Logout</div>
-        <div className="sidebar-foot">Signed in as<br /><strong style={{ color: "var(--paper)" }}>You</strong></div>
+        <div className="sidebar-foot">Signed in as<br /><strong style={{ color: "var(--paper)" }}>{localStorage.getItem("name") || "You"}</strong></div>
       </div>
 
       <div className="main">

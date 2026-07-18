@@ -14,7 +14,7 @@ function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${"https://fintrack-backend-bcg1.onrender.com"}/auth/signup`, { name, email, password });
+      await axios.post(`${API_URL}/auth/signup`, { name, email, password });
       navigate("/login");
     } catch (err) {
       setError("Signup failed. Try a different email.");

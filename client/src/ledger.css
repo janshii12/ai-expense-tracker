@@ -11,7 +11,7 @@
 .nav-tab .num{ font-family:'IBM Plex Mono',monospace; font-size:11px; opacity:.5; }
 .nav-tab.active{ color:var(--paper); border-left:3px solid var(--amber); background:rgba(250,247,240,0.05); }
 .sidebar-foot{ margin-top:auto; padding:20px 28px 0; font-size:12px; color:rgba(250,247,240,0.35); border-top:1px solid rgba(250,247,240,0.12); line-height:1.6; }
-.main{ padding:36px 44px 60px; max-width:1180px; }
+.main{ padding:36px 44px 60px; max-width:1180px; margin:0 auto; width:100%; box-sizing:border-box; }
 .topbar{ display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:34px; }
 .topbar h1{ font-family:'Newsreader',serif; font-size:30px; font-weight:500; }
 .topbar .sub{ color:var(--ink-light); font-size:14px; margin-top:4px; }
